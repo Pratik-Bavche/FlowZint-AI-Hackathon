@@ -160,4 +160,4 @@ NEXT_PUBLIC_API_URL=http://localhost:5000/api
 - **Local Fine-tuned Models:** Custom, on-premise model deployment for organizations prioritizing strict data privacy.
 
 ---
-*Built with ❤️ for the FlowZint AI Hackathon.*
+*Built by Pratik for the FlowZint AI Hackathon.*
