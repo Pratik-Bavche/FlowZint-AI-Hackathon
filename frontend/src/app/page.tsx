@@ -1,12 +1,19 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MessageSquare, BarChart3, Zap, ArrowRight, Bot, Sparkles, Shield, Activity } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LandingPage() {
   const [chatOpen, setChatOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsAuthenticated(localStorage.getItem('isAuthenticated') === 'true');
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden relative">
@@ -22,10 +29,17 @@ export default function LandingPage() {
           </div>
           <span className="text-xl font-bold tracking-tight">NexusAI</span>
         </div>
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
-          <Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
-          <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
-        </div>
+        
+        {isAuthenticated ? (
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
+            <Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
+            <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
+          </div>
+        ) : (
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
+            {/* Empty space to keep layout balanced */}
+          </div>
+        )}
         <div className="flex items-center gap-4">
           <Link href="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Log In</Link>
           <Link href="/register" className="px-4 py-2 text-sm font-medium bg-white text-black rounded-full hover:bg-gray-200 transition-colors">

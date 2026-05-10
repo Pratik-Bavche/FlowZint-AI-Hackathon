@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Users, Ticket, Zap, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const data = [
   { name: 'Mon', interactions: 400, resolved: 240 },
@@ -17,6 +18,28 @@ const data = [
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('overview');
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(true); // Assume true initially to prevent flicker
+  const [userInitial, setUserInitial] = useState('U');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const auth = localStorage.getItem('isAuthenticated');
+      if (!auth) {
+        setIsAuthenticated(false);
+        router.push('/login');
+      } else {
+        const email = localStorage.getItem('userEmail');
+        if (email) {
+          setUserInitial(email.charAt(0).toUpperCase());
+        }
+      }
+    }
+  }, [router]);
+
+  if (!isAuthenticated) {
+    return <div className="min-h-screen bg-[#0a0a0a]" />; // Loading state while redirecting
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
@@ -33,10 +56,20 @@ export default function Dashboard() {
           <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Log In</Link>
-          <Link href="/register" className="px-4 py-2 text-sm font-medium bg-white text-black rounded-full hover:bg-gray-200 transition-colors">
-            Get Started
-          </Link>
+          <div className="flex items-center gap-3 hidden md:flex">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shadow-lg">
+              {userInitial}
+            </div>
+          </div>
+          <button 
+            onClick={() => {
+              localStorage.removeItem('isAuthenticated');
+              router.push('/');
+            }}
+            className="text-sm font-medium text-gray-400 hover:text-white transition-colors ml-2 md:ml-4 md:border-l md:border-white/10 md:pl-4"
+          >
+            Log Out
+          </button>
         </div>
       </nav>
 
@@ -60,11 +93,7 @@ export default function Dashboard() {
                   <h1 className="text-2xl font-bold">Dashboard</h1>
                   <p className="text-gray-400 text-sm mt-1">Welcome back, Admin. Here's your AI summary.</p>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
-                    A
-                  </div>
-                </div>
+
               </header>
 
               {/* Stats Grid */}

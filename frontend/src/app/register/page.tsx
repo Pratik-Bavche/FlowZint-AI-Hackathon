@@ -1,10 +1,53 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Zap, ArrowRight, Mail, Lock, User, Building } from 'lucide-react';
+import { Zap, ArrowRight, Mail, Lock, User, Building, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [company, setCompany] = useState('');
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError('Email and password are required');
+      return;
+    }
+    
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('http://localhost:5000/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, firstName, lastName, company })
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('token', data.token);
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError(err.message);
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col relative overflow-hidden">
       {/* Background glowing effects */}
@@ -34,7 +77,13 @@ export default function RegisterPage() {
             <p className="text-gray-400 text-sm">Start your 14-day free trial today</p>
           </div>
 
-          <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+          {error && (
+            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+              {error}
+            </div>
+          )}
+
+          <form className="flex flex-col gap-4" onSubmit={handleRegister}>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-gray-300">First Name</label>
@@ -44,6 +93,8 @@ export default function RegisterPage() {
                   </div>
                   <input 
                     type="text" 
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
                     className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
                     placeholder="John"
                   />
@@ -54,6 +105,8 @@ export default function RegisterPage() {
                 <div className="relative">
                   <input 
                     type="text" 
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
                     className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
                     placeholder="Doe"
                   />
@@ -69,6 +122,8 @@ export default function RegisterPage() {
                 </div>
                 <input 
                   type="text" 
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
                   className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
                   placeholder="Acme Corp"
                 />
@@ -83,6 +138,8 @@ export default function RegisterPage() {
                 </div>
                 <input 
                   type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
                   placeholder="you@company.com"
                   required
@@ -98,6 +155,8 @@ export default function RegisterPage() {
                 </div>
                 <input 
                   type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
                   placeholder="••••••••"
                   required
@@ -105,8 +164,20 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <button className="mt-2 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl py-3 font-medium text-sm transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(79,70,229,0.2)]">
-              Create Account <ArrowRight className="w-4 h-4" />
+            <button 
+              type="submit"
+              disabled={isLoading}
+              className="mt-2 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl py-3 font-medium text-sm transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(79,70,229,0.2)] disabled:opacity-70 disabled:hover:scale-100"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Creating Account...
+                </>
+              ) : (
+                <>
+                  Create Account <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
             <p className="text-xs text-center text-gray-500 mt-2">
               By creating an account, you agree to our Terms of Service and Privacy Policy.

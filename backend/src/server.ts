@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import apiRoutes from './routes/api';
+import apiRoutes from './routes/api.js';
 
 dotenv.config();
 
